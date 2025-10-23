@@ -1,0 +1,74 @@
+  
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+    <meta charset="UTF-8">  
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">  
+    <title>QR Code Scanner</title>  
+    <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.18.2/umd/index.min.js"></script>  
+    <style>  
+        #qrcode {  
+            width: 300px;  
+            height: 300px;  
+            margin: 20px;  
+        }  
+        #video {  
+            width: 100%;  
+            max-width: 500px;  
+            margin: auto;  
+            display: block;  
+        }  
+    </style>  
+</head>  
+<body>  
+    <div style="text-align: center;">  
+        <img id="qrcode" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUoAAAFKAQAAAABTUiuoAAACAUlEQVR4nO2bQcrbMBCFv6kFWcrQA+Qo8g16ph6pN7CPkgMUrGVA5nVhOb//QMFuceLSmUUiK9/iwaDozUxiYmMMX7aS4KijjjrqqKNHolYjAExmXQ5AXra7wwU4ugdNkqQRGOwifW/BOhpJkj6jxwhwdEuE+p5bSD+AJLA0fkVkMGjKoQIc/QvUOoDhWurq5QIc3YMOLah/owBHfx/LN2EUkEEwBdItFNXHgwU4uh8dzMysBevyZU6RdUyzJXyFAEe3xHy2Po6QyJOJPFk9b0cLcHQHSvXoUVIPqI9l3lt9IEnq367V0ZqtNL8UID4KrFhWiGfrRGg2U58vIt1C9YRprEfNuhcIcHRD1HtraJvC8K2g4Vow4oiRW4BGdqQAR3dnq+YjGxCnAEzV2qfxYAGO/qHLkMrSMZxXBUnF763ToA+X8XAUI0uiRpitRvJsnQvNgcUTFtTTqPaglmL5RFr/X3Tt4IHqBLV6bLzeOg266mUIwIiqc5LUgz2KrhNodXRGn2bHs8sgV19o3eECHN2Dfp4dm7WTLb2MyeoA5SxaHSXXn1/UNsYtzH15yBdZ9wIBjm6I8LxRh/xNWYb8d5+YnBcdrnezLt7r5TWYO/jzoM+zYyOCyC1G/BlIHzOut2t1dF1bQaO5wOo/VrFWY15vnQA1/9eCo4466qij/xD6Cwn5KvJjPSxjAAAAAElFTkSuQmCC" alt="QR Code">  
+        <video id="video" width="100%" height="auto" style="display: none;"></video>  
+    </div>  
+
+    <script>  
+        const qrcode = document.getElementById('qrcode');  
+        const video = document.getElementById('video');  
+        let codeReader;  
+
+        qrcode.addEventListener('touchstart', function(e) {  
+            e.preventDefault();  
+            if (!codeReader) {  
+                codeReader = new ZXing.BrowserMultiFormatReader();  
+            }  
+            startScan();  
+        });  
+
+        function startScan() {  
+            navigator.mediaDevices.getUserMedia({ video: true })  
+                .then(stream => {  
+                    video.srcObject = stream;  
+                    video.play();  
+                    setTimeout(() => {  
+                        codeReader.decodeFromVideoElement(video)  
+                            .then(result => {  
+                                alert(result.text);  
+                                stopScan();  
+                            })  
+                            .catch(err => {  
+                                console.error(err);  
+                                stopScan();  
+                            });  
+                    }, 500);  
+                })  
+                .catch(err => {  
+                    console.error('Camera error:', err);  
+                    alert('无法访问摄像头，请确保已授权访问。');  
+                });  
+        }  
+
+        function stopScan() {  
+            if (video.srcObject) {  
+                const tracks = video.srcObject.getTracks();  
+                tracks.forEach(track => track.stop());  
+                video.srcObject = null;  
+            }  
+        }  
+    </script>  
+</body>  
+</html>  
